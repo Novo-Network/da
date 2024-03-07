@@ -8,9 +8,9 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1.72"
 anyhow = "1.0.72"
-hex = "0.4.3"
 serde = { version = "1.0", features = ["derive"] }
 
+hex = { version = "0.4.3", optional = true }
 sha3 = { version = "0.10", optional = true }
 futures =  { version = "0.3", optional = true }
 base58 = { version = "0.2.0", optional = true }
@@ -22,6 +22,8 @@ celestia-rpc = { git = "https://github.com/eigerco/celestia-node-rs.git", option
 celestia-types = { git = "https://github.com/eigerco/celestia-node-rs.git", optional = true }
 
 [features]
+default = ["file"]
+
 file = ["sha3", "hex"]
 ipfs = ["ipfs-api-backend-hyper", "ipfs-api", "base58", "futures" ]
 celestia = ["celestia-rpc", "celestia-types", "hex"]
