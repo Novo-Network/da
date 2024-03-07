@@ -33,7 +33,7 @@ impl CelestiaService {
 
 #[async_trait]
 impl DAService for CelestiaService {
-    async fn hash(&self, tx: &[u8]) -> Result<Vec<u8>> {
+    async fn hash(&self, _tx: &[u8]) -> Result<Vec<u8>> {
         Ok(vec![])
     }
 

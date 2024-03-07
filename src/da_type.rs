@@ -27,17 +27,17 @@ impl DaType {
 impl Default for DaType {
     fn default() -> Self {
         #[cfg(feature = "file")]
-        let default = Self::File;
+        let _default = Self::File;
         #[cfg(feature = "ipfs")]
-        let default = Self::Ipfs;
+        let _default = Self::Ipfs;
         #[cfg(feature = "celestia")]
-        let default = Self::Celestia;
+        let _default = Self::Celestia;
         #[cfg(feature = "greenfield")]
-        let default = Self::Greenfield;
+        let _default = Self::Greenfield;
         #[cfg(feature = "ethereum")]
-        let default = Self::Ethereum;
+        let _default = Self::Ethereum;
 
-        default
+        _default
     }
 }
 

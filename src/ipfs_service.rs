@@ -28,7 +28,7 @@ impl IpfsService {
 
 #[async_trait]
 impl DAService for IpfsService {
-    async fn hash(&self, tx: &[u8]) -> Result<Vec<u8>> {
+    async fn hash(&self, _tx: &[u8]) -> Result<Vec<u8>> {
         Ok(vec![])
     }
 

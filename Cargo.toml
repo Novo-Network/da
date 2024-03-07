@@ -24,6 +24,7 @@ celestia-rpc = { git = "https://github.com/eigerco/celestia-node-rs.git", option
 celestia-types = { git = "https://github.com/eigerco/celestia-node-rs.git", optional = true }
 
 [features]
+default = ["file", "ipfs", "celestia", "greenfield", "ethereum"]
 file = ["sha3", "hex"]
 ipfs = ["ipfs-api-backend-hyper", "ipfs-api", "base58", "futures" ]
 celestia = ["celestia-rpc", "celestia-types", "hex"]
