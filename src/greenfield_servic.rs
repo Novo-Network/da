@@ -39,8 +39,12 @@ impl GreenfieldService {
 
 #[async_trait]
 impl DAService for GreenfieldService {
+    async fn hash(&self, tx: &[u8]) -> Result<Vec<u8>> {
+        Ok(Keccak256::digest(tx).to_vec())
+    }
+
     async fn set_full_tx(&self, tx: &[u8]) -> Result<Vec<u8>> {
-        let hash = Self::hash(tx);
+        let hash = self.hash(tx).await?;
         if let Ok(content) = self.get_tx(&hash).await {
             if !content.is_empty() {
                 return Ok(hash);

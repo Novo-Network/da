@@ -6,6 +6,8 @@ use async_trait::async_trait;
 use crate::DaType;
 #[cfg(feature = "celestia")]
 use crate::{CelestiaConfig, CelestiaService};
+#[cfg(feature = "ethereum")]
+use crate::{EthereumConfig, EthereumService};
 #[cfg(feature = "file")]
 use crate::{FileConfig, FileService};
 #[cfg(feature = "greenfield")]
@@ -20,6 +22,8 @@ pub trait DAService: Sync + Send {
     async fn get_tx(&self, hash: &[u8]) -> Result<Vec<u8>>;
 
     fn type_byte(&self) -> u8;
+
+    async fn hash(&self, tx: &[u8]) -> Result<Vec<u8>>;
 
     async fn set_tx(&self, tx: &[u8]) -> Result<Vec<u8>> {
         let hash = self.set_full_tx(tx).await?;
@@ -44,30 +48,37 @@ impl DAServiceManager {
         #[cfg(feature = "ipfs")] ipfs_cfg: Option<IpfsConfig>,
         #[cfg(feature = "celestia")] celestia_cfg: Option<CelestiaConfig>,
         #[cfg(feature = "greenfield")] greenfield_cfg: Option<GreenfieldConfig>,
+        #[cfg(feature = "ethereum")] ethereum_cfg: Option<EthereumConfig>,
     ) -> Result<Self> {
         match default {
             #[cfg(feature = "file")]
             DaType::File => {
                 if file_cfg.is_none() {
-                    return Err(anyhow!("file flag not enabled"));
+                    return Err(anyhow!("file config not found"));
                 }
             }
             #[cfg(feature = "ipfs")]
             DaType::Ipfs => {
                 if ipfs_cfg.is_none() {
-                    return Err(anyhow!("ipfs flag not enabled"));
+                    return Err(anyhow!("ipfs config not found"));
                 }
             }
             #[cfg(feature = "celestia")]
             DaType::Celestia => {
                 if celestia_cfg.is_none() {
-                    return Err(anyhow!("celestia flag not enabled"));
+                    return Err(anyhow!("celestia config not found"));
                 }
             }
             #[cfg(feature = "greenfield")]
             DaType::Greenfield => {
                 if greenfield_cfg.is_none() {
-                    return Err(anyhow!("celestia flag not enabled"));
+                    return Err(anyhow!("celestia config not found"));
+                }
+            }
+            #[cfg(feature = "ethereum")]
+            DaType::Ethereum => {
+                if ethereum_cfg.is_none() {
+                    return Err(anyhow!("ethereum config not found"));
                 }
             }
         }
@@ -97,6 +108,12 @@ impl DAServiceManager {
             services.insert(service.type_byte(), Box::new(service));
         }
 
+        #[cfg(feature = "ethereum")]
+        if let Some(cfg) = ethereum_cfg {
+            let service = EthereumService::new(cfg).await?;
+            services.insert(service.type_byte(), Box::new(service));
+        }
+
         Ok(Self {
             services,
             default: default.type_byte(),
@@ -108,6 +125,14 @@ impl DAServiceManager {
 
     pub fn default_type(&self) -> u8 {
         self.default
+    }
+
+    pub async fn calc_hash(&self, tx: &[u8]) -> Result<Vec<u8>> {
+        let services = self
+            .services
+            .get(&self.default)
+            .ok_or(anyhow!("default da not found"))?;
+        services.hash(tx).await
     }
 
     pub async fn get_tx(&self, hash: impl Into<Vec<u8>>) -> Result<Vec<u8>> {

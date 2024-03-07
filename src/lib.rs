@@ -33,3 +33,10 @@ mod greenfield_servic;
 pub use greenfield_servic::Config as GreenfieldConfig;
 #[cfg(feature = "greenfield")]
 pub use greenfield_servic::GreenfieldService;
+
+#[cfg(feature = "ethereum")]
+mod ethereum_servic;
+#[cfg(feature = "ethereum")]
+pub use ethereum_servic::Config as EthereumConfig;
+#[cfg(feature = "ethereum")]
+pub use ethereum_servic::EthereumService;

@@ -28,6 +28,10 @@ impl IpfsService {
 
 #[async_trait]
 impl DAService for IpfsService {
+    async fn hash(&self, tx: &[u8]) -> Result<Vec<u8>> {
+        Ok(vec![])
+    }
+
     async fn set_full_tx(&self, tx: &[u8]) -> Result<Vec<u8>> {
         let hash = self
             .ipfs

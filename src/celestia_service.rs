@@ -33,6 +33,10 @@ impl CelestiaService {
 
 #[async_trait]
 impl DAService for CelestiaService {
+    async fn hash(&self, tx: &[u8]) -> Result<Vec<u8>> {
+        Ok(vec![])
+    }
+
     async fn set_full_tx(&self, tx: &[u8]) -> Result<Vec<u8>> {
         let opts = SubmitOptions::default();
         let blob = Blob::new(self.namespace, tx.to_vec())?;
