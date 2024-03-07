@@ -6,21 +6,20 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ipfs-api-backend-hyper = { version = "0.6.0", features = ["with-send-sync"], optional = true }
-ipfs-api = { version = "0.17.0", features = ["with-hyper-rustls"], default-features = false, optional = true }
-
-celestia-rpc = { git = "https://github.com/eigerco/celestia-node-rs.git", optional = true }
-celestia-types = { git = "https://github.com/eigerco/celestia-node-rs.git", optional = true }
+async-trait = "0.1.72"
+anyhow = "1.0.72"
+hex = "0.4.3"
+serde = { version = "1.0", features = ["derive"] }
 
 sha3 = { version = "0.10", optional = true }
 futures =  { version = "0.3", optional = true }
 base58 = { version = "0.2.0", optional = true }
 
-anyhow = { workspace = true }
-hex = { workspace = true, optional = true }
-serde = { workspace = true }
+ipfs-api-backend-hyper = { version = "0.6.0", features = ["with-send-sync"], optional = true }
+ipfs-api = { version = "0.17.0", features = ["with-hyper-rustls"], default-features = false, optional = true }
 
-async-trait = { workspace = true }
+celestia-rpc = { git = "https://github.com/eigerco/celestia-node-rs.git", optional = true }
+celestia-types = { git = "https://github.com/eigerco/celestia-node-rs.git", optional = true }
 
 [features]
 file = ["sha3", "hex"]
