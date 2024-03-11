@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::process::Command;
 
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
@@ -104,8 +105,25 @@ impl DAServiceManager {
 
         #[cfg(feature = "greenfield")]
         if let Some(cfg) = greenfield_cfg {
-            let service = GreenfieldService::new(cfg);
+            let service = GreenfieldService::new(cfg.clone());
             services.insert(service.type_byte(), Box::new(service));
+
+            // first kill if this exist
+            Command::new("make")
+                .args(["kill"])
+                .current_dir("components/gf-sdk-server")
+                .status()?;
+
+            // start gf sdk server
+            Command::new("gf-sdk-server")
+                .args([
+                    format!("-private_key_path={}", cfg.private_key_path),
+                    format!("-host={}", cfg.gf_sdk_host),
+                    format!("-chain_rpc={}", cfg.rpc_addr),
+                    format!("-chain_id={}", cfg.chain_id),
+                ])
+                .current_dir("components/gf-sdk-server")
+                .status()?;
         }
 
         #[cfg(feature = "ethereum")]

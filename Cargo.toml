@@ -2,6 +2,7 @@
 name = "da"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -22,11 +23,13 @@ ipfs-api = { version = "0.17.0", features = ["with-hyper-rustls"], default-featu
 
 celestia-rpc = { git = "https://github.com/eigerco/celestia-node-rs.git", optional = true }
 celestia-types = { git = "https://github.com/eigerco/celestia-node-rs.git", optional = true }
+reqwest = { version = "0.11.23", features = ["json", "stream"], optional = true }
+serde_json = { version = "1.0.105", optional = true }
 
 [features]
 default = ["file", "ipfs", "celestia", "greenfield", "ethereum"]
 file = ["sha3", "hex"]
 ipfs = ["ipfs-api-backend-hyper", "ipfs-api", "base58", "futures" ]
 celestia = ["celestia-rpc", "celestia-types", "hex"]
-greenfield = ["sha3", "hex"]
+greenfield = ["sha3", "hex", "serde_json", "reqwest"]
 ethereum = ["ethers", "hex"]
