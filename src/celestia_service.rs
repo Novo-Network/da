@@ -1,7 +1,8 @@
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use celestia_rpc::{BlobClient, Client};
-use celestia_types::{blob::SubmitOptions, consts::HASH_SIZE, nmt::Namespace, Blob, Commitment};
+use celestia_types::blob::GasPrice;
+use celestia_types::{consts::HASH_SIZE, nmt::Namespace, Blob, Commitment};
 use serde::{Deserialize, Serialize};
 
 use crate::{service::DAService, DaType};
@@ -38,10 +39,13 @@ impl DAService for CelestiaService {
     }
 
     async fn set_full_tx(&self, tx: &[u8]) -> Result<Vec<u8>> {
-        let opts = SubmitOptions::default();
+        // let opts = SubmitOptions::default();
         let blob = Blob::new(self.namespace, tx.to_vec())?;
         let mut hash = blob.commitment.0.to_vec();
-        let height = self.client.blob_submit(&[blob], opts).await?;
+        let height = self
+            .client
+            .blob_submit(&[blob], GasPrice::from(None))
+            .await?;
         hash.extend_from_slice(&height.to_be_bytes());
         Ok(hash)
     }

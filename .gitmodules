@@ -1,0 +1,3 @@
+[submodule "components/gf-sdk-server"]
+	path = components/gf-sdk-server
+	url = https://github.com/Novo-Network/gf-sdk-server
