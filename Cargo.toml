@@ -25,11 +25,12 @@ celestia-rpc = { git = "https://github.com/eigerco/celestia-node-rs.git", option
 celestia-types = { git = "https://github.com/eigerco/celestia-node-rs.git", optional = true }
 reqwest = { version = "0.11.23", features = ["json", "stream"], optional = true }
 serde_json = { version = "1.0.105", optional = true }
+tokio = { version = "1.35.0", features = ["full"], optional = true }
 
 [features]
 default = ["file", "ipfs", "celestia", "greenfield", "ethereum"]
 file = ["sha3", "hex"]
 ipfs = ["ipfs-api-backend-hyper", "ipfs-api", "base58", "futures" ]
 celestia = ["celestia-rpc", "celestia-types", "hex"]
-greenfield = ["sha3", "hex", "serde_json", "reqwest"]
+greenfield = ["sha3", "hex", "serde_json", "reqwest", "tokio"]
 ethereum = ["ethers", "hex"]

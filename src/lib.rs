@@ -1,5 +1,5 @@
 #![deny(warnings, unused_crate_dependencies)]
-
+use tokio as _;
 mod da_type;
 pub use da_type::*;
 

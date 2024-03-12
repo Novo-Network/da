@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
 
-use crate::greenfield_servic::gf_sdk_server::{create_obj, get_obj, put_obj, Req};
+use crate::greenfield_servic::gf_sdk_server::{create_obj, get_obj, put_obj, Req, Resp};
 use crate::{DAService, DaType};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -47,7 +47,8 @@ impl DAService for GreenfieldService {
         let hash = {
             let hash = self.hash(tx).await?;
             if let Ok(content) = self.get_tx(&hash).await {
-                if !content.is_empty() {
+                let val = serde_json::from_slice::<Resp>(&content)?;
+                if val.code == 0 {
                     return Ok(hash);
                 }
             }
@@ -57,12 +58,12 @@ impl DAService for GreenfieldService {
         // gen url and req
         let (req, url) = {
             let obj = hex::encode(&hash);
-            let url = format!("{}/object/{}/{}", self.gf_sdk_host, self.bucket, obj);
+            let url = format!("http://{}/object/{}/{}", self.gf_sdk_host, self.bucket, obj);
             let data = hex::encode(tx);
             let req = Req {
                 data,
                 content_type: "text/plain".to_string(),
-                visibility: "private".to_string(),
+                visibility: 1,
                 sync: true,
             };
             (req, url)
@@ -101,7 +102,7 @@ impl DAService for GreenfieldService {
         let obj = hex::encode(hash);
 
         // gen url
-        let url = format!("{}/object/{}/{}", self.gf_sdk_host, self.bucket, obj);
+        let url = format!("http://{}/object/{}/{}", self.gf_sdk_host, self.bucket, obj);
 
         let resp = get_obj(&url).await?;
 
@@ -127,7 +128,7 @@ mod gf_sdk_server {
     pub struct Req {
         pub data: String,
         pub content_type: String,
-        pub visibility: String,
+        pub visibility: i32,
         pub sync: bool,
     }
 
@@ -169,5 +170,70 @@ mod gf_sdk_server {
         }
 
         Ok(data)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::greenfield_servic::Config;
+    use crate::{DAService, GreenfieldService};
+    use serde_json::json;
+    use std::process::Command;
+    use std::thread::sleep;
+    use std::time::Duration;
+
+    #[test]
+    fn test_set_tx() {
+        std::thread::spawn(|| {
+            // first kill if this exist
+            Command::new("make")
+                .args(["kill"])
+                .current_dir("components/gf-sdk-server")
+                .status()
+                .unwrap();
+
+            // start gf sdk server
+            Command::new("make")
+                .args(["testnet-run"])
+                .current_dir("components/gf-sdk-server")
+                .status()
+                .unwrap();
+        });
+
+        sleep(Duration::from_secs(5));
+
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+
+        rt.block_on(async {
+            let cfg = Config {
+                rpc_addr: "https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443"
+                    .to_string(),
+                chain_id: "greenfield_5600-1".to_string(),
+                bucket: "bucket123123123".to_string(),
+                private_key_path: "/home/cloud/.ssh/gf-sdk-server.pk".to_string(),
+                gf_sdk_host: "0.0.0.0:8099".to_string(),
+            };
+
+            let gfs = GreenfieldService::new(cfg);
+            let tx = json!({
+                "hash": "0x99898",
+                "block_num": 99
+            });
+            let tx_hash_bytes = gfs
+                .set_full_tx(&serde_json::to_vec(&tx).unwrap())
+                .await
+                .unwrap();
+            println!("hash: {}", hex::encode(tx_hash_bytes));
+        });
+
+        // first kill if this exist
+        Command::new("make")
+            .args(["kill"])
+            .current_dir("components/gf-sdk-server")
+            .status()
+            .unwrap();
     }
 }
